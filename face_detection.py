@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from keras.models import load_model
+from utils import resize_images, convert_data_to_float_and_normalize
 
 
 def face_detection(image):
@@ -46,4 +48,26 @@ def get_scaled_box(detection, image_width, image_height):
 
 
 def draw_box_on_image(image, box):
-    cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), color=(255, 0, 0), thickness=3)
+    model = load_life_stage_model()
+    face = image[box[1]:box[3], box[0]:box[2]]
+    class_id = get_life_stage_prediction(face, model)
+    color = get_color_for_class(class_id)
+    cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), color=color, thickness=3)
+
+
+def load_life_stage_model():
+    model = load_model('models/life_stage_model.h5')
+    return model
+
+
+def get_life_stage_prediction(image, model):
+    image = resize_images([image])[0]
+    image = convert_data_to_float_and_normalize(image)
+    image = np.expand_dims(image, axis=0)
+    class_id = np.argmax(model.predict(image)[0])
+    return class_id
+
+
+def get_color_for_class(class_id):
+    colors = {0: (255, 0, 0), 1: (0, 255, 0)}
+    return colors[class_id]
