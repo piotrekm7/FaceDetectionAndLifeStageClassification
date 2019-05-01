@@ -1,12 +1,11 @@
 import cv2
 import numpy as np
-from keras.models import load_model
 from utils import resize_images, convert_data_to_float_and_normalize
 
 
-def face_detection(image):
+def face_detection(image, models):
     image, blob = prepare_image(image)
-    net = load_network()
+    net = models[0]
 
     detections = perform_detection(blob, net)
     filtered_detections = filter_detections(detections)
@@ -14,7 +13,7 @@ def face_detection(image):
     for detection in filtered_detections:
         (height, width) = image.shape[:2]
         box = get_scaled_box(detection, width, height)
-        draw_box_on_image(image, box)
+        draw_box_on_image(image, box, life_stage_model=models[1])
 
     return image
 
@@ -22,12 +21,6 @@ def face_detection(image):
 def prepare_image(image):
     blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (0, 0, 0))
     return image, blob
-
-
-def load_network():
-    net = cv2.dnn.readNetFromCaffe('models/caffe/deploy.prototxt.txt',
-                                   'models/caffe/res10_300x300_ssd_iter_140000.caffemodel')
-    return net
 
 
 def perform_detection(blob, net):
@@ -47,17 +40,11 @@ def get_scaled_box(detection, image_width, image_height):
     return box.astype('int')
 
 
-def draw_box_on_image(image, box):
-    model = load_life_stage_model()
+def draw_box_on_image(image, box, life_stage_model):
     face = image[box[1]:box[3], box[0]:box[2]]
-    class_id = get_life_stage_prediction(face, model)
+    class_id = get_life_stage_prediction(face, life_stage_model)
     color = get_color_for_class(class_id)
     cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), color=color, thickness=3)
-
-
-def load_life_stage_model():
-    model = load_model('models/life_stage_model.h5')
-    return model
 
 
 def get_life_stage_prediction(image, model):

@@ -1,6 +1,7 @@
 import cv2
 import face_detection
 import os
+import utils
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
 
 def get_face_with_highest_score(image):
     image, blob = face_detection.prepare_image(image)
-    net = face_detection.load_network()
+    net = utils.load_face_detection_network()
 
     detections = face_detection.perform_detection(blob, net)
 
