@@ -2,8 +2,8 @@
 Performing face detection on image.
 
 Typical usage:
-face_detection = FaceDetection(face_detection_model)
-bounding_boxes = face_detection(image)
+    face_detection = FaceDetection(face_detection_model)
+    bounding_boxes = face_detection(image)
 """
 
 import numpy as np
@@ -14,8 +14,8 @@ class FaceDetection:
     Class for performing face detection on an image.
 
     Attributes:
-        face_detection_model: model for performing face detection, should return list of tuples
-                in format (dd,faa,gasds,fasfas,gasas,fsfaf,asfasf,aff)
+        face_detection_model: model for performing face detection, should return 2d numpy array
+                with rows in format [Confidence, X_start, Y_start, X_end, Y_end]
     """
 
     def __init__(self, face_detection_model):
@@ -51,7 +51,7 @@ class FaceDetection:
         Returns:
             List of detections above given confidence threshold.
         """
-        filtered_detection = [detections[i] for i in range(0, len(detections)) if detections[i, 2] > threshold]
+        filtered_detection = [detections[i] for i in range(0, len(detections)) if detections[i, 0] > threshold]
         return filtered_detection
 
     @staticmethod
@@ -66,5 +66,5 @@ class FaceDetection:
         Returns:
         Bounding box containing face scaled to an image.
         """
-        box = detection[3:7] * np.array([image_width, image_height, image_width, image_height])
+        box = detection[1:5] * np.array([image_width, image_height, image_width, image_height])
         return box.astype('int')

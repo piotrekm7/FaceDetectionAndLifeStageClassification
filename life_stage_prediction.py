@@ -2,8 +2,8 @@
 Predicts if face belongs to adult or child
 
 Typical usage:
-life_stage_predictor = LifeStagePrediction(model_path)
-class = life_stage_predictor(image)
+    life_stage_predictor = LifeStagePrediction(model_path)
+    class = life_stage_predictor(image)
 """
 
 import cv2

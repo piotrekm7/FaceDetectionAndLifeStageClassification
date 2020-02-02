@@ -1,23 +1,40 @@
+"""
+Detecting faces and predicts life stage on video.
+
+Args:
+    --camera: camera id or path to a video file
+
+Typical use:
+    python video_stream_detection.py --camera="video.avi"
+"""
+
 import argparse
 import cv2
-from face_detection_and_life_stage_classification import face_detection
-from utils import load_dnn_models
+from single_image_detection import prepare_processing_engines
 
 
 def parse_args():
+    """
+    Parse command line arguments.
+    Returns:
+        Parsed arguments.
+    """
     ap = argparse.ArgumentParser()
     ap.add_argument('-c', '--camera', default=0, help='camera id or path to a video file')
     return vars(ap.parse_args())
 
 
 def main():
+    """
+    Runs face detection and life stage classification on video and displays the results.
+    """
     args = parse_args()
     cap = cv2.VideoCapture(args['camera'])
-    dnn_models = load_dnn_models()
+    image_processor = prepare_processing_engines()
     while True:
         _, frame = cap.read()
-        detection = face_detection(frame, dnn_models)
-        cv2.imshow('Output', detection)
+        processed_image = image_processor(frame)
+        cv2.imshow('Output', processed_image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

@@ -1,3 +1,11 @@
+"""
+Performing face detection and life stage classification on image
+
+Typical use:
+    engine = FaceDetectionAndLifeStageClassification()
+    processed_image = engine(image)
+"""
+
 import cv2
 
 
@@ -27,6 +35,7 @@ class FaceDetectionAndLifeStageClassification:
             Processed image with colorful rectangles around faces.
             Rectangle color depends on face life stage.
         """
+        image = image.copy()
         boxes = self.face_detection_model(image)
         for box in boxes:
             class_id = self.__predict_life_stage(image, box)
