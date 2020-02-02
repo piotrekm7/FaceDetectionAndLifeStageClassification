@@ -1,6 +1,6 @@
 import argparse
 import cv2
-from face_detection import face_detection
+from face_detection_and_life_stage_classification import face_detection
 from utils import load_dnn_models
 
 

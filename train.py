@@ -32,7 +32,7 @@ def prepare_data():
     return data
 
 
-def load_images(path):
+def load_images(path: str):
     files = os.listdir(path)
     images = [cv2.imread(os.path.join(path, file)) for file in files]
     return images

@@ -1,60 +1,70 @@
-import cv2
+"""
+Performing face detection on image.
+
+Typical usage:
+face_detection = FaceDetection(face_detection_model)
+bounding_boxes = face_detection(image)
+"""
+
 import numpy as np
-from utils import resize_images, convert_data_to_float_and_normalize
 
 
-def face_detection(image, models):
-    image, blob = prepare_image(image)
-    net = models[0]
+class FaceDetection:
+    """
+    Class for performing face detection on an image.
 
-    detections = perform_detection(blob, net)
-    filtered_detections = filter_detections(detections)
+    Attributes:
+        face_detection_model: model for performing face detection, should return list of tuples
+                in format (dd,faa,gasds,fasfas,gasas,fsfaf,asfasf,aff)
+    """
 
-    for detection in filtered_detections:
-        (height, width) = image.shape[:2]
-        box = get_scaled_box(detection, width, height)
-        draw_box_on_image(image, box, life_stage_model=models[1])
+    def __init__(self, face_detection_model):
+        """
+        Inits FaceDetection class.
+        """
+        self.face_detection_model = face_detection_model
 
-    return image
+    def __call__(self, image):
+        """
+        Performs face detection on image.
+        Args:
+            image: numpy 2d array with 3 channels, opencv image representation
 
+        Returns:
+            Bounding boxes with faces, scaled to image.
+        """
+        detections = self.face_detection_model(image.copy())
+        filtered_detections = self.__filter_detections(detections)
 
-def prepare_image(image):
-    blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (0, 0, 0))
-    return image, blob
+        height, width = image.shape[:2]
+        boxes = [self.__get_scaled_box(detection, width, height) for detection in filtered_detections]
+        return boxes
 
+    @staticmethod
+    def __filter_detections(detections, threshold=0.5):
+        """
+        Returns detections with confidence above given threshold.
+        Args:
+            detections: detections from face detection model
+            threshold: minimum confidence to classify detection as correct
 
-def perform_detection(blob, net):
-    net.setInput(blob)
-    detections = net.forward()
-    return detections[0, 0]
+        Returns:
+            List of detections above given confidence threshold.
+        """
+        filtered_detection = [detections[i] for i in range(0, len(detections)) if detections[i, 2] > threshold]
+        return filtered_detection
 
+    @staticmethod
+    def __get_scaled_box(detection, image_width, image_height):
+        """
+        Scales bounding boxes to image dimensions
+        Args:
+            detection: detection from face detection model
+            image_width: width of image
+            image_height: height of image
 
-def filter_detections(detections, threshold=0.5):
-    # Return detections with confidence above given threshold
-    filtered_detections = [detections[i] for i in range(0, len(detections)) if detections[i, 2] > threshold]
-    return filtered_detections
-
-
-def get_scaled_box(detection, image_width, image_height):
-    box = detection[3:7] * np.array([image_width, image_height, image_width, image_height])
-    return box.astype('int')
-
-
-def draw_box_on_image(image, box, life_stage_model):
-    face = image[box[1]:box[3], box[0]:box[2]]
-    class_id = get_life_stage_prediction(face, life_stage_model)
-    color = get_color_for_class(class_id)
-    cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), color=color, thickness=3)
-
-
-def get_life_stage_prediction(image, model):
-    image = resize_images([image])[0]
-    image = convert_data_to_float_and_normalize(image)
-    image = np.expand_dims(image, axis=0)
-    class_id = np.argmax(model.predict(image)[0])
-    return class_id
-
-
-def get_color_for_class(class_id):
-    colors = {0: (255, 0, 0), 1: (0, 255, 0)}
-    return colors[class_id]
+        Returns:
+        Bounding box containing face scaled to an image.
+        """
+        box = detection[3:7] * np.array([image_width, image_height, image_width, image_height])
+        return box.astype('int')

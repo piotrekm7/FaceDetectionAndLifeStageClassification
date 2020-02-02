@@ -20,7 +20,7 @@ def load_dnn_models():
 
 
 def load_face_detection_network():
-    net = cv2.dnn.readNetFromCaffe('models/caffe/deploy.prototxt.txt',
+    net = cv2.dnn.readNetFromCaffe('models/caffe/deploy.prototxt',
                                    'models/caffe/res10_300x300_ssd_iter_140000.caffemodel')
     return net
 
